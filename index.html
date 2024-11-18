@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Document</title>
+    <style>
+      h5 {
+        font-size: 8px;
+      }
+      body {
+        font-family: Arial, sans-serif;
+        margin: 20px;
+        display: flex;
+        flex-direction: row;
+      }
+      textarea {
+        width: 100%;
+        padding: 10px;
+        margin-bottom: 20px;
+        border: 1px solid #ccc;
+        border-radius: 4px;
+        font-size: 16px;
+      }
+      #tableContainer {
+        width: 30%;
+        margin-left: 20px;
+      }
+      #resultsContainer div:nth-child(2) {
+        color: skyblue!important;
+      }
+      table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-bottom: 20px;
+      }
+      table, th, td {
+        border: 1px solid #ddd;
+      }
+      th, td {
+        padding: 8px;
+        text-align: left;
+      }
+      th {
+        background-color: #f2f2f2;
+      }
+      tr:nth-child(even) {
+        background-color: #f9f9f9;
+      }
+      tr:hover {
+        background-color: #f1f1f1;
+      }
+      #resultsContainer {
+        width: 70%;
+      }
+      #resultsContainer div {
+        padding: 10px;
+        border: 1px solid #ddd;
+        border-radius: 4px;
+        margin-bottom: 10px;
+        background-color: #f9f9f9;
+        white-space: pre-wrap;
+      }
+      .correct-answer {
+        background-color: lightgreen;
+      }
+      .highlight {
+        background-color: lightgreen!important;
+      }
+      .original-question {
+        background-color: lightblue!important;
+      }
+    </style>
+  </head>
+  <body>
+    <textarea
+      id="jsonInput"
+      rows="10"
+      cols="50"
+      placeholder="Enter JSON here"
+    ></textarea>
+    <div id="resultsContainer"></div>
+    <div id="tableContainer"></div>
+
+    <script>
+      example = [
+        {
+          number: "1",
+          question:
+            "必须坚持（ ）对民族工作的领导，提升解决民族问题、做好民族工作的能力和水平。",
+          options: [
+            "中国共产党",
+            "人民代表大会",
+            "政府",
+            "人民代表大会常务委员会",
+          ],
+          correctAnswer: "中国共产党",
+        },
+      ];
+
+      document
+        .getElementById("jsonInput")
+        .addEventListener("input", function () {
+          const jsonInput = document.getElementById("jsonInput").value;
+          try {
+            const data = JSON.parse(jsonInput);
+            renderTable(data);
+          } catch (e) {
+            console.error("Invalid JSON");
+          }
+        });
+
+      function renderTable(data) {
+        const tableContainer = document.getElementById("tableContainer");
+        tableContainer.innerHTML = "";
+        const table = document.createElement("table");
+        let row;
+        data.forEach((item, index) => {
+          if (index % 5 === 0) {
+            row = table.insertRow();
+          }
+          const cell = row.insertCell();
+          cell.textContent = item.number;
+          cell.addEventListener("click", function () {
+            searchQuestion(item.question, item.options, item.correctAnswer);
+          });
+        });
+        tableContainer.appendChild(table);
+      }
+      function searchQuestion(query, options, correctAnswer) {
+        const resultsContainer = document.getElementById("resultsContainer");
+        resultsContainer.innerHTML = `<div class="original-question">${query}</div>`;
+        const questionDiv = document.createElement("div");
+        options.forEach((option, index) => {
+          const optionDiv = document.createElement("div");
+          const optionLabel = String.fromCharCode(65 + index) + ". " + option;
+          optionDiv.textContent = optionLabel;
+          questionDiv.appendChild(optionDiv);
+        });
+        resultsContainer.appendChild(questionDiv);
+        const results = fuse.search(query);
+        console.log(results);
+        renderResults(results, correctAnswer);
+      }
+
+      function renderResults(results, correctAnswer) {
+        const resultsContainer = document.getElementById("resultsContainer");
+        results.forEach((result) => {
+          const div = document.createElement("div");
+          div.textContent = result.item.question;
+          const answerDiv = document.createElement("div");
+          answerDiv.textContent = "Answer: " + result.item.answer;
+          answerDiv.classList.add("highlight");
+          if (result.item.answer === correctAnswer) {
+        answerDiv.classList.add("correct-answer");
+          }
+          div.appendChild(answerDiv);
+          resultsContainer.appendChild(div);
+        });
+      }
+      function renderResults(results, correctAnswer) {
+        const resultsContainer = document.getElementById("resultsContainer");
+        results.forEach((result) => {
+          const div = document.createElement("div");
+          const titleDiv = document.createElement("h5");
+          titleDiv.textContent = result.item.title;
+          div.appendChild(titleDiv);
+          const questionLines = result.item.question.split(/(?=[A-Z])|\n/);
+          questionLines.forEach((line) => {
+        const lineDiv = document.createElement("p");
+        lineDiv.textContent = line;
+        div.appendChild(lineDiv);
+          });
+          const answerDiv = document.createElement("div");
+          answerDiv.textContent = "Answer: " + result.item.answer;
+          answerDiv.classList.add("highlight");
+          if (result.item.answer === correctAnswer) {
+        answerDiv.classList.add("correct-answer");
+          }
+          div.appendChild(answerDiv);
+          resultsContainer.appendChild(div);
+        });
+      }
+      
+    </script>
+    <script src="fuse.js"></script>
+    <script src="search.js"></script>
+  </body>
+</html>
